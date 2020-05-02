@@ -4,11 +4,12 @@ import { getStock } from "../api";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";
+import { Input, Button } from "@material-ui/core";
+import { useForm, Controller } from "react-hook-form";
 
 export default function Quote() {
-  const [stockSymbol, setStockSymbol] = useState("");
+  const { control, handleSubmit } = useForm();
   const [stock, setStock] = useState({});
-
   const columns = [
     { headerName: "Timestamp", field: "timestamp" },
     { headerName: "Sybmol", field: "symbol" },
@@ -20,22 +21,25 @@ export default function Quote() {
     { headerName: "Volumes", field: "volumes" },
   ];
 
+  const onSubmit = ({ symbol }) => {
+    getStock(symbol).then((stock) => setStock(stock));
+  };
+  // TODO: Make symbol field required
   return (
     <div>
       <h3>Quote</h3>
-      <input
-        id="stock-symbol"
-        name="stock-symbol"
-        value={stockSymbol}
-        onChange={(event) => setStockSymbol(event.target.value)}
-      />
-      <button
-        id="search-button"
-        type="button"
-        onClick={() => getStock(stockSymbol).then((stock) => setStock(stock))}
-      >
-        Submit
-      </button>
+
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Controller
+          as={Input}
+          name="symbol"
+          id="symbol"
+          control={control}
+          defaultValue=""
+        />
+        <Button type="submit">Submit</Button>
+      </form>
+
       <div
         className="ag-theme-balham"
         style={{ height: "80px", width: "1500px" }}

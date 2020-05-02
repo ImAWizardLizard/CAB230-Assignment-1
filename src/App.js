@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PriceHistory from "./pages/PriceHistory";
 import { getSession, logOut } from "./helpers";
+import { Button } from "@material-ui/core";
 
 function App() {
   const history = useHistory();
@@ -16,30 +17,44 @@ function App() {
       <nav>
         <ul>
           <li>
-            <Link to="/">Home</Link>
+            <Button component={Link} to="/">
+              Home
+            </Button>
           </li>
           <li>
-            <Link to="/stocks">Stocks</Link>
+            <Button component={Link} to="/stocks">
+              Stocks
+            </Button>
           </li>
           <li>
-            <Link to="/quote">Quote</Link>
+            <Button component={Link} to="/quote">
+              Quote
+            </Button>
           </li>
           <li>
-            <Link to="/pricehistory">Price History (Restricted)</Link>
+            <Button component={Link} to="/pricehistory">
+              Price History (Restricted)
+            </Button>
           </li>
           {getSession() ? (
             <div>
               <li>
-                <Link to="/logout">Logout</Link>
+                <Button component={Link} to="/logout">
+                  Logout
+                </Button>
               </li>
             </div>
           ) : (
             <div>
               <li>
-                <Link to="/login">Login</Link>
+                <Button component={Link} to="/login">
+                  Login
+                </Button>
               </li>
               <li>
-                <Link to="/register">Register</Link>
+                <Button component={Link} to="/register">
+                  Register
+                </Button>
               </li>
             </div>
           )}

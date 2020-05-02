@@ -55,13 +55,14 @@ export default function Stock() {
     getStocks().then((stocks) => {
       axios
         .all(
-          stocks.map((stock) => {
-            return getStock(stock.symbol);
+          stocks.data.map((stock) => {
+            return getStock(stock.symbol).then((stock) => stock.data);
           })
         )
         .then(
           axios.spread((...responses) => {
             setStocks(responses);
+            setLoading(false);
           })
         );
     });
