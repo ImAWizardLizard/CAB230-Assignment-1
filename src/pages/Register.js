@@ -1,41 +1,55 @@
 import React, { useState } from "react";
 import { registerUser } from "../api";
-import { Input, Button } from "@material-ui/core";
-import { useForm, Controller } from "react-hook-form";
+import { makeStyles } from "@material-ui/core";
+import AccountForm from "../components/AccountForm";
+import { useHistory } from "react-router-dom";
+
+const useStyles = makeStyles((theme) => ({
+  margin: {
+    margin: theme.spacing.unit * 2,
+  },
+  padding: {
+    padding: theme.spacing.unit,
+  },
+  alertRoot: {
+    width: "100%",
+    "& > * + *": {
+      marginTop: theme.spacing(2),
+    },
+  },
+}));
 
 export default function Register() {
-  const { control, handleSubmit, reset } = useForm();
   const [result, setResult] = useState("");
+  const [open, setOpen] = useState(false);
+  const [severity, setSeverity] = useState("");
 
-  const onSubmit = ({ email, password }) => {
-    registerUser(email, password).then((res) => {
+  const onSubmit = ({ username, password }) => {
+    registerUser(username, password).then((res) => {
       if (res.status === 201 && res.data.success) {
         setResult("Account successfully registered");
+        setSeverity("success");
       } else if (res.data.error) {
         if (res.status === 401) {
           setResult("Need both email and password as input");
+          setSeverity("error");
         } else if (res.status === 409) {
           setResult("User already registered");
+          setSeverity("error");
         }
       }
+      setOpen(true);
     });
   };
 
   return (
-    <div>
-      <h3>Register</h3>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Controller as={Input} name="email" control={control} defaultValue="" />
-        <Controller
-          as={Input}
-          name="password"
-          type="password"
-          control={control}
-          defaultValue=""
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-      <h1>{result}</h1>
-    </div>
+    <AccountForm
+      type="Register"
+      submit={onSubmit}
+      styles={useStyles}
+      open={open}
+      result={result}
+      severity={severity}
+    />
   );
 }

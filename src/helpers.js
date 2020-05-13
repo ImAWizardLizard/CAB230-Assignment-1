@@ -1,14 +1,13 @@
-import Cookies from "js-cookie";
-
 export const getSession = () => {
-  const jwt = Cookies.get("__session");
+  const jwt = localStorage.getItem("__token");
+  // const jwt = Cookies.get("__session");
   return jwt;
 };
 
 export const setSession = (token) => {
-  Cookies.set("__session", token);
+  localStorage.setItem("__token", token);
 };
 
-export const logOut = () => {
-  Cookies.remove("__session");
+export const removeSession = () => {
+  localStorage.removeItem("__token");
 };

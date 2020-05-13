@@ -2,44 +2,55 @@ import { loginUser } from "../api";
 import React, { useState } from "react";
 import { setSession } from "../helpers";
 import { useHistory } from "react-router-dom";
-import { Input, Button } from "@material-ui/core";
-import { useForm, Controller } from "react-hook-form";
+import { makeStyles } from "@material-ui/core/styles";
+import AccountForm from "../components/AccountForm";
+import { useForm } from "react-hook-form";
+
+const useStyles = makeStyles((theme) => ({
+  margin: {
+    margin: theme.spacing.unit * 2,
+  },
+  padding: {
+    padding: theme.spacing.unit,
+  },
+  alertRoot: {
+    width: "100%",
+    "& > * + *": {
+      marginTop: theme.spacing(2),
+    },
+  },
+}));
 
 export default function Login() {
-  const { control, handleSubmit, reset } = useForm();
+  const { reset } = useForm();
   const [result, setResult] = useState("");
+  const [open, setOpen] = useState(false);
+  const [severity, setSeverity] = useState("");
   const history = useHistory();
 
-  const onSubmit = ({ email, password }) => {
-    loginUser(email, password).then((res) => {
+  const onSubmit = ({ username, password }) => {
+    loginUser(username, password).then((res) => {
       if (res.status === 200) {
         setSession(res.data.token);
         setResult("Login Successfull");
+        setSeverity("success");
         history.push("/login");
       } else if (res.status === 401) {
+        setSeverity("error");
         setResult(res.data.message);
-        reset({
-          password: "",
-        });
+        reset();
       }
+      setOpen(true);
     });
   };
-  // TODO: Make email and password field required
   return (
-    <div>
-      <h3>Login</h3>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Controller as={Input} name="email" control={control} defaultValue="" />
-        <Controller
-          as={Input}
-          name="password"
-          type="password"
-          control={control}
-          defaultValue=""
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-      <h1>{result}</h1>
-    </div>
+    <AccountForm
+      type="Login"
+      submit={onSubmit}
+      styles={useStyles}
+      open={open}
+      result={result}
+      severity={severity}
+    />
   );
 }

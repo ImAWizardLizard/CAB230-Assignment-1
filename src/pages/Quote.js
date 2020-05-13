@@ -22,13 +22,14 @@ export default function Quote() {
   ];
 
   const onSubmit = ({ symbol }) => {
-    getStock(symbol).then((stock) => setStock(stock));
+    getStock(symbol).then((stock) => {
+      console.log(stock);
+      setStock(stock.data);
+    });
   };
   // TODO: Make symbol field required
   return (
     <div>
-      <h3>Quote</h3>
-
       <form onSubmit={handleSubmit(onSubmit)}>
         <Controller
           as={Input}

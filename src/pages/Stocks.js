@@ -4,6 +4,9 @@ import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";
 import { getStocks, getStock } from "../api";
 import axios from "axios";
+import { Paper, Grid } from "@material-ui/core";
+import Loader from "react-loader-spinner";
+import Typography from "@material-ui/core/Typography";
 
 export default function Stock() {
   const [stocks, setStocks] = useState([]);
@@ -69,24 +72,39 @@ export default function Stock() {
   }, []);
 
   return (
-    <div
-      className="ag-theme-balham"
-      style={{
-        height: "300px",
-        width: "1500px",
-      }}
-    >
-      <h3>Stocks</h3>
+    <Paper>
       {loading ? (
-        <h1>Loading</h1>
+        <Grid
+          container
+          direction="column"
+          justify="center"
+          alignItems="center"
+          spacing={0}
+          style={{ minHeight: "100vh" }}
+        >
+          <Grid item xs={3}>
+            <Loader type="Puff" color="#00BFFF" height={100} width={100} />
+          </Grid>
+          <Grid item xs={3}>
+            <Typography variant="h6">Loading Stocks</Typography>
+          </Grid>
+        </Grid>
       ) : (
-        <AgGridReact
-          columnDefs={columns}
-          rowData={stocks}
-          pagination={true}
-          paginationPageSize={8}
-        />
+        <div
+          className="ag-theme-balham"
+          style={{
+            height: "620px",
+            width: "1500px",
+          }}
+        >
+          <AgGridReact
+            columnDefs={columns}
+            rowData={stocks}
+            pagination={true}
+            paginationAutoPageSize={true}
+          />
+        </div>
       )}
-    </div>
+    </Paper>
   );
 }

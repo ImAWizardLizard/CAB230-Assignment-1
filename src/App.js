@@ -6,60 +6,104 @@ import Quote from "./pages/Quote";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PriceHistory from "./pages/PriceHistory";
-import { getSession, logOut } from "./helpers";
-import { Button } from "@material-ui/core";
+import { getSession, removeSession } from "./helpers";
+import { Button, Grid } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
+import Typography from "@material-ui/core/Typography";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  title: {
+    flexGrow: 1,
+  },
+  appbar: {
+    alignItems: "center",
+  },
+}));
 
 function App() {
+  const classes = useStyles();
+  const [value, setValue] = React.useState(0);
   const history = useHistory();
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
   return (
     <div className="App">
-      <nav>
-        <ul>
-          <li>
-            <Button component={Link} to="/">
-              Home
-            </Button>
-          </li>
-          <li>
-            <Button component={Link} to="/stocks">
-              Stocks
-            </Button>
-          </li>
-          <li>
-            <Button component={Link} to="/quote">
-              Quote
-            </Button>
-          </li>
-          <li>
-            <Button component={Link} to="/pricehistory">
-              Price History (Restricted)
-            </Button>
-          </li>
-          {getSession() ? (
-            <div>
-              <li>
-                <Button component={Link} to="/logout">
+      <div className={classes.root}>
+        <AppBar position="static">
+          <Toolbar>
+            <Grid
+              container
+              justify="flex-start"
+              direction="row"
+              alignItems="center"
+            >
+              <Typography variant="h6">Stock Prices</Typography>
+              <Tabs
+                value={value}
+                onChange={handleChange}
+                aria-label="simple tabs example"
+              >
+                <Tab label="Home" value="/" component={Link} to="/" />
+                <Tab
+                  label="Stocks"
+                  value="/stocks"
+                  component={Link}
+                  to="/stocks"
+                />
+                <Tab
+                  label="Quote"
+                  value="/quote"
+                  component={Link}
+                  to="/quote"
+                />
+                <Tab
+                  label="Price History (Restricted)"
+                  value="/pricehistory"
+                  component={Link}
+                  to="/pricehistory"
+                />
+              </Tabs>
+            </Grid>
+            {getSession() ? (
+              <div>
+                <Button
+                  color="inherit"
+                  component={Link}
+                  to="/logout"
+                  onClick={() => {
+                    removeSession();
+                    history.push("/");
+                  }}
+                >
                   Logout
                 </Button>
-              </li>
-            </div>
-          ) : (
-            <div>
-              <li>
-                <Button component={Link} to="/login">
+              </div>
+            ) : (
+              <div>
+                <Button color="inherit" component={Link} to="/login">
                   Login
                 </Button>
-              </li>
-              <li>
-                <Button component={Link} to="/register">
+                <Button color="inherit" component={Link} to="/register">
                   Register
                 </Button>
-              </li>
-            </div>
-          )}
-        </ul>
-      </nav>
+              </div>
+            )}
+          </Toolbar>
+        </AppBar>
+      </div>
 
       <Switch>
         <Route exact path="/">
@@ -83,13 +127,7 @@ function App() {
         <Route path="/Register">
           <Register />
         </Route>
-        <Route
-          path="/logout"
-          render={() => {
-            logOut();
-            history.push("/home");
-          }}
-        />
+        <Route path="/logout" render={() => <Redirect to="/" />} />
       </Switch>
     </div>
   );

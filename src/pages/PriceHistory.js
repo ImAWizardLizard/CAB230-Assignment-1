@@ -1,24 +1,31 @@
 import React, { useState } from "react";
+import { getDateStock } from "../api";
+import { useForm, Controller } from "react-hook-form";
+import DatePicker from "react-datepicker";
 import { AgGridReact } from "ag-grid-react";
+import { Button, Box, Grid, Input, Paper, makeStyles } from "@material-ui/core";
+import ShowChartIcon from "@material-ui/icons/ShowChart";
+import CalendarTodayIcon from "@material-ui/icons/CalendarToday";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.css";
-import { getDateStock } from "../api";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import LineGraph from "../components/LineGraph";
-import { format } from "date-fns";
-import { Input, Button, Box, Grid } from "@material-ui/core";
-import { useForm, Controller } from "react-hook-form";
-import Paper from "@material-ui/core/Paper";
+import StockGraph from "../components/StockGraph";
 
-// TODO: Potentially visualizations
-// bar graph / pie chart of Low, High, Close, Open by industry
-// list of Top ten industrys by High, Low, Close, Open
+const useStyles = makeStyles((theme) => ({
+  margin: {
+    margin: theme.spacing.unit * 2,
+  },
+  padding: {
+    padding: theme.spacing.unit,
+  },
+}));
 
 export default function PriceHistory() {
-  const [stocks, setStocks] = useState([]);
+  const [rows, setRows] = useState([]);
+  const [data, setData] = useState([]);
   const [error, setError] = useState("");
   const { control, handleSubmit } = useForm();
+  const classes = useStyles();
 
   const columns = [
     {
@@ -66,66 +73,101 @@ export default function PriceHistory() {
   const onSubmit = ({ symbol, fromDate, toDate }) => {
     getDateStock(
       symbol,
-      fromDate ? fromDate.toISOString() : null,
-      toDate ? toDate.toISOString() : null
+      fromDate ? fromDate.toISOString() : new Date(2019, 11, 6).toISOString(),
+      toDate ? toDate.toISOString() : new Date(2020, 3, 23).toISOString()
     ).then((response) => {
       if (response.status === 404) {
         setError(response.data.message);
+        setRows([]);
+        setData([]);
       } else {
-        setStocks(
-          Array.isArray(response.data) ? response.data : [response.data]
-        );
+        if (Array.isArray(response.data)) {
+          setRows(response.data);
+          setData(response.data);
+        }
       }
     });
   };
-  // TODO: Make the symbol field required
+
   return (
     <div>
+      <Paper className={classes.padding}>
+        <div className={classes.margin}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Grid container alignItems="flex-end" spacing={8}>
+              <Grid item>
+                <ShowChartIcon />
+              </Grid>
+              <Grid item md={true} sm={true} xs={true}>
+                <Controller
+                  as={<Input required />}
+                  name="symbol"
+                  control={control}
+                  defaultValue=""
+                />
+              </Grid>
+            </Grid>
+            <Grid container alignItems="flex-end" spacing={8}>
+              <Grid item>
+                <CalendarTodayIcon />
+              </Grid>
+              <Grid item md={true} sm={true} xs={true}>
+                <Controller
+                  as={
+                    <DatePicker
+                      placeholderText="Click to select a start date"
+                      dateFormat="yyyy-MM-dd"
+                      autoComplete="off"
+                    />
+                  }
+                  name="fromDate"
+                  control={control}
+                  defaultValue=""
+                  valueName="selected" // DateSelect value's name is selected
+                  onChange={([selected]) => {
+                    return selected;
+                  }}
+                />
+              </Grid>
+            </Grid>
+            <Grid container alignItems="flex-end" spacing={8}>
+              <Grid item>
+                <CalendarTodayIcon />
+              </Grid>
+              <Grid item md={true} sm={true} xs={true}>
+                <Controller
+                  as={
+                    <DatePicker
+                      placeholderText="Click to select an end date"
+                      dateFormat="yyyy-MM-dd"
+                      autoComplete="off"
+                    />
+                  }
+                  name="toDate"
+                  control={control}
+                  defaultValue=""
+                  valueName="selected" // DateSelect value's name is selected
+                  onChange={([selected]) => {
+                    return selected;
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container style={{ marginTop: "10px" }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                style={{ textTransform: "none" }}
+                type="submit"
+              >
+                Submit
+              </Button>
+            </Grid>
+          </form>
+        </div>
+      </Paper>
       <Box>
-        <h3>Price History</h3>
-        <h3>{error}</h3>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Controller
-            as={Input}
-            name="symbol"
-            control={control}
-            defaultValue=""
-          />
-          <Controller
-            as={
-              <DatePicker
-                placeholderText="Click to select a start date"
-                dateFormat="yyyy-MM-dd"
-                autoComplete="off"
-              />
-            }
-            name="fromDate"
-            control={control}
-            defaultValue=""
-            valueName="selected" // DateSelect value's name is selected
-            onChange={([selected]) => {
-              return selected;
-            }}
-          />
-          <Controller
-            as={
-              <DatePicker
-                placeholderText="Click to select an end date"
-                dateFormat="yyyy-MM-dd"
-                autoComplete="off"
-              />
-            }
-            name="toDate"
-            control={control}
-            defaultValue=""
-            valueName="selected" // DateSelect value's name is selected
-            onChange={([selected]) => {
-              return selected;
-            }}
-          />
-          <Button type="submit">Submit</Button>
-        </form>
-        {/* TODO: Insert highest high, lowest low...information cards */}
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Paper>
@@ -137,113 +179,16 @@ export default function PriceHistory() {
               >
                 <AgGridReact
                   columnDefs={columns}
-                  rowData={stocks}
+                  rowData={rows}
                   pagination={true}
                   paginationPageSize={8}
                 />
               </div>
             </Paper>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <Paper>
-              <LineGraph
-                title="Open Price"
-                data={{
-                  labels: stocks
-                    .map((stock) =>
-                      format(Date.parse(stock.timestamp), "yyyy-L-d")
-                    )
-                    .reverse(),
-                  datasets: [
-                    {
-                      label: "price",
-                      fill: false,
-                      lineTension: 0.5,
-                      backgroundColor: "rgba(75,192,192,1)",
-                      borderColor: "rgba(0,0,0,1)",
-                      borderWidth: 2,
-                      data: stocks.map((stock) => stock.open),
-                    },
-                  ],
-                }}
-              />
-            </Paper>
-          </Grid>
-
-          <Grid item xs={6}>
-            <Paper>
-              <LineGraph
-                title="Closing Price"
-                data={{
-                  labels: stocks
-                    .map((stock) =>
-                      format(Date.parse(stock.timestamp), "yyyy-L-d")
-                    )
-                    .reverse(),
-                  datasets: [
-                    {
-                      label: "price",
-                      fill: false,
-                      lineTension: 0.5,
-                      backgroundColor: "rgba(75,192,192,1)",
-                      borderColor: "rgba(0,0,0,1)",
-                      borderWidth: 2,
-                      data: stocks.map((stock) => stock.close),
-                    },
-                  ],
-                }}
-              />
-            </Paper>
-          </Grid>
-
-          <Grid item xs={6}>
-            <Paper>
-              <LineGraph
-                title="High Price"
-                data={{
-                  labels: stocks
-                    .map((stock) =>
-                      format(Date.parse(stock.timestamp), "yyyy-L-d")
-                    )
-                    .reverse(),
-                  datasets: [
-                    {
-                      label: "price",
-                      fill: false,
-                      lineTension: 0.5,
-                      backgroundColor: "rgba(75,192,192,1)",
-                      borderColor: "rgba(0,0,0,1)",
-                      borderWidth: 2,
-                      data: stocks.map((stock) => stock.high),
-                    },
-                  ],
-                }}
-              />
-            </Paper>
-          </Grid>
-          <Grid item xs={6}>
-            <Paper>
-              <LineGraph
-                title="Low Price"
-                data={{
-                  labels: stocks
-                    .map((stock) =>
-                      format(Date.parse(stock.timestamp), "yyyy-L-d")
-                    )
-                    .reverse(),
-                  datasets: [
-                    {
-                      label: "price",
-                      fill: false,
-                      lineTension: 0.5,
-                      backgroundColor: "rgba(75,192,192,1)",
-                      borderColor: "rgba(0,0,0,1)",
-                      borderWidth: 2,
-                      data: stocks.map((stock) => stock.low),
-                    },
-                  ],
-                }}
-              />
+              <StockGraph title="Stock History Data" data={data} />
             </Paper>
           </Grid>
         </Grid>
