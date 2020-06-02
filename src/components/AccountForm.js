@@ -6,18 +6,35 @@ import Container from "@material-ui/core/Container";
 import { Fingerprint } from "@material-ui/icons";
 import Alert from "@material-ui/lab/Alert";
 import AccountBoxIcon from "@material-ui/icons/AccountBox";
+import { makeStyles } from "@material-ui/core/styles";
+
+const useStyles = makeStyles((theme) => ({
+  margin: {
+    margin: theme.spacing.unit * 2,
+  },
+  padding: {
+    padding: theme.spacing.unit,
+  },
+  alertRoot: {
+    width: "100%",
+    "& > * + *": {
+      marginTop: theme.spacing(2),
+    },
+  },
+}));
 
 export default function AccountForm({
   type,
   submit,
-  styles,
-  open,
-  result,
-  severity,
+  alert,
+  alertResult,
+  alertSeverity,
+  children,
 }) {
   const { register, handleSubmit } = useForm();
-  const classes = styles();
+  const classes = useStyles();
 
+  // This provides a resuseable component to construct the login and register forms
   return (
     <Container style={{ marginTop: "50px" }} maxWidth="sm">
       <Paper className={classes.padding}>
@@ -68,14 +85,15 @@ export default function AccountForm({
           </form>
         </div>
         <Grid container justify="center" style={{ marginTop: "10px" }}>
-          {open ? (
+          {alert ? (
             <div className={classes.alertRoot}>
-              <Alert severity={severity}>{result}</Alert>
+              <Alert severity={alertSeverity}>{alertResult}</Alert>
             </div>
           ) : (
             <div></div>
           )}
         </Grid>
+        {children}
       </Paper>
     </Container>
   );

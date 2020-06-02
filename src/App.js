@@ -56,19 +56,23 @@ function App() {
                 onChange={handleChange}
                 aria-label="simple tabs example"
               >
+                {/*Home Page*/}
                 <Tab label="Home" value="/" component={Link} to="/" />
+                {/*Stocks Page*/}
                 <Tab
                   label="Stocks"
                   value="/stocks"
                   component={Link}
                   to="/stocks"
                 />
+                {/*Quote Page*/}
                 <Tab
                   label="Quote"
                   value="/quote"
                   component={Link}
                   to="/quote"
                 />
+                {/*Price History Page*/}
                 <Tab
                   label="Price History (Restricted)"
                   value="/pricehistory"
@@ -77,6 +81,7 @@ function App() {
                 />
               </Tabs>
             </Grid>
+            {/*If logged in display the logout button , else the login and register button*/}
             {getSession() ? (
               <div>
                 <Button
@@ -104,7 +109,7 @@ function App() {
           </Toolbar>
         </AppBar>
       </div>
-
+      {/* Set up the routes which corresponds to the link components layout out in the application */}
       <Switch>
         <Route exact path="/">
           <Home />
